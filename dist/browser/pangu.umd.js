@@ -1,7 +1,10 @@
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? module.exports = factory() : typeof define === "function" && define.amd ? define(factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, global.pangu = factory());
 })(this, function() {
-  "use strict";
+  "use strict";var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+
   const CJK = "⺀-⻿⼀-⿟぀-ゟ゠-ヺー-ヿ㄀-ㄯ㈀-㋿㐀-䶿一-鿿豈-﫿";
   const ANY_CJK = new RegExp(`[${CJK}]`);
   const CONVERT_TO_FULLWIDTH_CJK_SYMBOLS_CJK = new RegExp(`([${CJK}])[ ]*([\\:]+|\\.)[ ]*([${CJK}])`, "g");
@@ -36,10 +39,8 @@
   const MIDDLE_DOT = /([ ]*)([\u00b7\u2022\u2027])([ ]*)/g;
   class Pangu {
     constructor() {
+      __publicField(this, "version");
       this.version = "5.0.0";
-    }
-    convertToFullwidth(symbols) {
-      return symbols.replace(/~/g, "～").replace(/!/g, "！").replace(/;/g, "；").replace(/:/g, "：").replace(/,/g, "，").replace(/\./g, "。").replace(/\?/g, "？");
     }
     spacingText(text) {
       if (typeof text !== "string") {
@@ -93,6 +94,9 @@
     spacing(text) {
       return this.spacingText(text);
     }
+    convertToFullwidth(symbols) {
+      return symbols.replace(/~/g, "～").replace(/!/g, "！").replace(/;/g, "；").replace(/:/g, "：").replace(/,/g, "，").replace(/\./g, "。").replace(/\?/g, "？");
+    }
   }
   function once(func) {
     let executed = false;
@@ -128,6 +132,12 @@
   class BrowserPangu extends Pangu {
     constructor() {
       super();
+      __publicField(this, "blockTags");
+      __publicField(this, "ignoredTags");
+      __publicField(this, "presentationalTags");
+      __publicField(this, "spaceLikeTags");
+      __publicField(this, "spaceSensitiveTags");
+      __publicField(this, "isAutoSpacingPageExecuted");
       this.blockTags = /^(div|p|h1|h2|h3|h4|h5|h6)$/i;
       this.ignoredTags = /^(code|pre|script|style|textarea|iframe)$/i;
       this.presentationalTags = /^(b|code|del|em|i|s|strong|kbd)$/i;
@@ -316,18 +326,21 @@
       }
       const queue = [];
       const self2 = this;
-      const debouncedSpacingNodes = debounce(() => {
-        while (queue.length) {
-          const node = queue.shift();
-          if (node) {
-            self2.spacingNode(node);
+      const debouncedSpacingNodes = debounce(
+        () => {
+          while (queue.length) {
+            const node = queue.shift();
+            if (node) {
+              self2.spacingNode(node);
+            }
           }
-        }
-      }, nodeDelay, nodeMaxWait);
+        },
+        nodeDelay,
+        nodeMaxWait
+      );
       const mutationObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           switch (mutation.type) {
-            /* eslint-disable indent */
             case "childList":
               mutation.addedNodes.forEach((node2) => {
                 if (node2.nodeType === Node.ELEMENT_NODE) {
@@ -353,6 +366,7 @@
         subtree: true
       });
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     isContentEditable(node) {
       return node.isContentEditable || node.getAttribute && node.getAttribute("g_editable") === "true";
     }

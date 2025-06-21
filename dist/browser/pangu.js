@@ -1,3 +1,6 @@
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 import { Pangu } from "../shared/index.js";
 function once(func) {
   let executed = false;
@@ -33,6 +36,12 @@ function debounce(func, delay, mustRunDelay = Infinity) {
 class BrowserPangu extends Pangu {
   constructor() {
     super();
+    __publicField(this, "blockTags");
+    __publicField(this, "ignoredTags");
+    __publicField(this, "presentationalTags");
+    __publicField(this, "spaceLikeTags");
+    __publicField(this, "spaceSensitiveTags");
+    __publicField(this, "isAutoSpacingPageExecuted");
     this.blockTags = /^(div|p|h1|h2|h3|h4|h5|h6)$/i;
     this.ignoredTags = /^(code|pre|script|style|textarea|iframe)$/i;
     this.presentationalTags = /^(b|code|del|em|i|s|strong|kbd)$/i;
@@ -221,18 +230,21 @@ class BrowserPangu extends Pangu {
     }
     const queue = [];
     const self = this;
-    const debouncedSpacingNodes = debounce(() => {
-      while (queue.length) {
-        const node = queue.shift();
-        if (node) {
-          self.spacingNode(node);
+    const debouncedSpacingNodes = debounce(
+      () => {
+        while (queue.length) {
+          const node = queue.shift();
+          if (node) {
+            self.spacingNode(node);
+          }
         }
-      }
-    }, nodeDelay, nodeMaxWait);
+      },
+      nodeDelay,
+      nodeMaxWait
+    );
     const mutationObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         switch (mutation.type) {
-          /* eslint-disable indent */
           case "childList":
             mutation.addedNodes.forEach((node2) => {
               if (node2.nodeType === Node.ELEMENT_NODE) {
@@ -258,6 +270,7 @@ class BrowserPangu extends Pangu {
       subtree: true
     });
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isContentEditable(node) {
     return node.isContentEditable || node.getAttribute && node.getAttribute("g_editable") === "true";
   }
